@@ -29,6 +29,33 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #import "freshobjc_test.h"
 #import <Foundation/Foundation.h>
 
+// This should contain #defines for FRESHBOOKS_API_TOKEN (32 hex digits) and
+// FRESHBOOKS_ADDRESS (like myaccount.freshbooks.com)
+#import "test_account.h"
+
+@interface myParseDelegate : NSObject
+{
+}
+@end
+
+@implementation myParseDelegate
+- (id)init
+{
+	if(self = [super init])
+	{
+	}
+	return self;
+}
+- (void)parser:(NSXMLParser *)parser 
+	didStartElement:(NSString *)elementName 
+	namespaceURI:(NSString *)namespaceURI 
+	qualifiedName:(NSString *)qualifiedName 
+	attributes:(NSDictionary *)attributeDict
+{
+	NSLog(@"%@\n", elementName);
+}
+@end
+
 @interface geturl : NSObject
 {
 }
@@ -44,14 +71,19 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 }
 - (NSString*)dorequest
 {
+	NSString *pd = @"<?xml version='1.0' encoding='utf-8'?><request method='invoice.list'></request>";
+	NSData *postdata = [NSData dataWithBytes:[pd UTF8String] length:[pd length]];
+
 	// create the request
-	NSURLRequest *theRequest=[NSURLRequest
-		requestWithURL:[NSURL URLWithString:@"https://API_TOKEN:whatever@YOURSYSTEM.freshbooks.com/api/2.1/xml-in"]
+	NSMutableURLRequest *theRequest=[NSMutableURLRequest
+		requestWithURL:[NSURL URLWithString:@"https://" FRESHBOOKS_API_TOKEN @":whatever@" FRESHBOOKS_ADDRESS @"/api/2.1/xml-in"]
 		cachePolicy:NSURLRequestReloadIgnoringLocalCacheData
 		timeoutInterval:60.0];
+	[theRequest setHTTPMethod:@"POST"];
+	[theRequest setHTTPBody:postdata];
 	// create the connection with the request and start loading the data
-	NSURLResponse *response = [[NSURLResponse alloc] init];
-	NSError *err = [[NSError alloc] init];
+	NSURLResponse *response = NULL;
+	NSError *err = NULL;
 	NSData *reply=[NSURLConnection
 		sendSynchronousRequest:theRequest
 		returningResponse:&response
@@ -65,7 +97,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 		@" * MIMEType: %@\n"
 		@" * textEncodingName: %@ / %@\n"
 		@" * URL: %@\n"
-		@" * reply: %@\n",
+		@" * reply: \n***\n%@\n***\n",
 		[response expectedContentLength],
 		[response suggestedFilename],
 		[response MIMEType],
@@ -73,6 +105,25 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 		[response URL],
 		rstr
 		);
+
+	NSXMLParser *parser = [[NSXMLParser alloc] init];
+	[parser initWithData: reply];
+
+	[parser setDelegate: [[myParseDelegate alloc] init]];
+
+	if ([parser parse])
+		NSLog(@"Parsed successfully\n");
+	else
+		NSLog(@"Did not parse\n");
+
+	// Something in here is corrupting the pool free in main().
+	// [postdata release];
+	// [theRequest release];
+	// if (response) [response release];
+	// if (err) [err release];
+	// [reply release];
+	// [rstr release];
+	// [parser release];
 
 	return @"Whee!";
 }
@@ -82,7 +133,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 int main(int argc, char *argv[]) {
 	NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
 
-	NSUserDefaults *args = [NSUserDefaults standardUserDefaults];
+//	NSUserDefaults *args = [NSUserDefaults standardUserDefaults];
 
 	NSLog([[[geturl alloc] init] dorequest]);
 
