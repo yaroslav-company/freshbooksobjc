@@ -26,6 +26,24 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
+// All FreshBooks XML responses were originally derived from a simple nested array.
+// I don't see a reason that we shouldn't return the favour, using NSArrays and NSDictionaries.
+// We _do_ need to know what kinds of things should be arrays, because ... we don't!
+// As we walk the stack, we read tags.  If a tag contains other tags, ... ok.  Fine.
+// I'm not convinced that we have to, but it will make life a lot easier for this stream parser
+// if I know when I hit a tag "Oh, this should be an array" or "Oh, this should be a dictionary".
+// "response" is the root element.
+	// "clients" => array of its children
+	// "client" => dictionary of its children
+// OR
+	// "invoices" => array of its children
+	// "invoice" => dictionary of its children
+// OR
+	// "invoice" => dictionary of its children
+	// "lines" => array of its children
+	// "line" => dictionary of its children
+// etc
+
 #import "FBXMLParser.h"
 
 @implementation FBXMLParser
@@ -37,7 +55,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 	{
 		xp = [[NSXMLParser alloc] initWithData: data];
 		[xp setDelegate: self];
-		currentPhase = FBXMLParserPhase_NOWHERE;
+		currentPhase = FBXMLParser_Phase_NOWHERE;
 	}
 	return self;
 }
@@ -47,19 +65,21 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 	namespaceURI:(NSString *)namespaceURI 
 	qualifiedName:(NSString *)qName
 {
+#if DEBUG
 	NSLog(@"FBXMLParser leaving element: %@", elementName);
+#endif
 
 	switch (currentPhase) {
-	case FBXMLParserPhase_CLIENT:
+	case FBXMLParser_Phase_CLIENT:
 		if (NSOrderedSame == [elementName compare:@"client"]) {
 			NSLog(@"End of client record");
-			currentPhase = FBXMLParserPhase_RESPONSE;
+			currentPhase = FBXMLParser_Phase_RESPONSE;
 		}
 		break;
-	case FBXMLParserPhase_RESPONSE:
+	case FBXMLParser_Phase_RESPONSE:
 		if (NSOrderedSame == [elementName compare:@"response"]) {
 			NSLog(@"End of response");
-			currentPhase = FBXMLParserPhase_NOWHERE;
+			currentPhase = FBXMLParser_Phase_NOWHERE;
 		}
 	}
 }
@@ -70,24 +90,26 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 	qualifiedName:(NSString *)qualifiedName 
 	attributes:(NSDictionary *)attributeDict
 {
+#if DEBUG
 	NSLog(@"FBXMLParser found element: %@\n", elementName);
+#endif
 
 	switch (currentPhase) {
-	case FBXMLParserPhase_NOWHERE:
+	case FBXMLParser_Phase_NOWHERE:
 		if (NSOrderedSame == [elementName compare:@"response"]) {
 			if (NSOrderedSame != [[attributeDict valueForKey:@"status"] compare:@"ok"]) {
 				NSLog(@"Status Failed: '%@'", [attributeDict valueForKey:@"status"]);
-				currentPhase = FBXMLParserPhase_STATUS_FAIL;
+				currentPhase = FBXMLParser_Phase_STATUS_FAIL;
 			} else {
 				NSLog(@"Status Succeeded", [attributeDict valueForKey:@"status"]);
-				currentPhase = FBXMLParserPhase_RESPONSE;
+				currentPhase = FBXMLParser_Phase_RESPONSE;
 			}
 		}
 		break;
-	case FBXMLParserPhase_RESPONSE:
+	case FBXMLParser_Phase_RESPONSE:
 		if (NSOrderedSame == [elementName compare:@"client"]) {
 			NSLog(@"Found client record");
-			currentPhase = FBXMLParserPhase_CLIENT;
+			currentPhase = FBXMLParser_Phase_CLIENT;
 		}
 		break;
 	}
