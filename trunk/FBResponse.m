@@ -25,33 +25,20 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
-#import <Foundation/Foundation.h>
+#include "FBResponse.h"
 
-typedef enum FBXMLParser_Type {
-	FBXMLParser_Type_DICTIONARY,
-	FBXMLParser_Type_ARRAY
-} FBXMLParser_Type;
-
-typedef enum FBXMLParser_Phase {
-	FBXMLParser_Phase_NOWHERE,
-	FBXMLParser_Phase_RESPONSE,
-	FBXMLParser_Phase_CLIENT,
-	FBXMLParser_Phase_CLIENT_ID,
-	FBXMLParser_Phase_CLIENT_USERNAME,
-	FBXMLParser_Phase_CLIENT_FIRST_NAME,
-	FBXMLParser_Phase_CLIENT_LAST_NAME,
-	FBXMLParser_Phase_CLIENT_ORGANIZATION,
-	FBXMLParser_Phase_CLIENT_EMAIL,
-	FBXMLParser_Phase_STATUS_FAIL,
-	FBXMLParser_Phase_BAD
-} FBXMLParser_Phase;
-
-@interface FBXMLParser : NSObject
+@implementation FBResponse
+- (id)init
 {
-	NSXMLParser *xp;
-	FBXMLParser_Phase currentPhase;
-	NSDictionary *FBDefs;
+	if (self = [super init])
+	{
+		success  = false;
+		page     = 0;
+		per_page = 0;
+		pages    = 0;
+		total    = 0;
+		data     = nil;
+	}
+	return self;
 }
-- (id)initWithData:(NSData *)data;
-- (BOOL)parse;
 @end

@@ -25,33 +25,45 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
-#import <Foundation/Foundation.h>
 
-typedef enum FBXMLParser_Type {
-	FBXMLParser_Type_DICTIONARY,
-	FBXMLParser_Type_ARRAY
-} FBXMLParser_Type;
+#import "FBClient.h"
 
-typedef enum FBXMLParser_Phase {
-	FBXMLParser_Phase_NOWHERE,
-	FBXMLParser_Phase_RESPONSE,
-	FBXMLParser_Phase_CLIENT,
-	FBXMLParser_Phase_CLIENT_ID,
-	FBXMLParser_Phase_CLIENT_USERNAME,
-	FBXMLParser_Phase_CLIENT_FIRST_NAME,
-	FBXMLParser_Phase_CLIENT_LAST_NAME,
-	FBXMLParser_Phase_CLIENT_ORGANIZATION,
-	FBXMLParser_Phase_CLIENT_EMAIL,
-	FBXMLParser_Phase_STATUS_FAIL,
-	FBXMLParser_Phase_BAD
-} FBXMLParser_Phase;
+@implementation FBClient
 
-@interface FBXMLParser : NSObject
+- (id)init
 {
-	NSXMLParser *xp;
-	FBXMLParser_Phase currentPhase;
-	NSDictionary *FBDefs;
+	if (self = [super init]) {
+		client_id = [[NSNumber alloc] init];
+		username = @"";
+		first_name = @"";
+		last_name = @"";
+		organization = @"";
+		email = @"";
+        // = @"";
+		password = @"";
+        // = @"";
+		work_phone = @"";
+		home_phone = @"";
+		mobile = @"";
+		fax = @"";
+        // = @"";
+		p_street1 = @"";
+		p_street2 = @"";
+		p_city = @"";
+		p_state = @"";
+		p_country = @"";
+		p_code = @"";
+        // = @"";
+		s_street1 = @"";
+		s_street2 = @"";
+		s_city = @"";
+		s_state = @"";
+		s_country = @"";
+		s_code = @"";
+        // = @"";
+		notes = @"";
+	}
+	return self;
 }
-- (id)initWithData:(NSData *)data;
-- (BOOL)parse;
+
 @end
