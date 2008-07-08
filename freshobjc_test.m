@@ -27,50 +27,16 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */ 
 
 #import "freshobjc_test.h"
+#import "FBXMLParser.h"
 #import <Foundation/Foundation.h>
 
 // This should contain #defines for FRESHBOOKS_API_TOKEN (32 hex digits) and
 // FRESHBOOKS_ADDRESS (like myaccount.freshbooks.com)
 #import "test_account.h"
 
-@interface myParseDelegate : NSObject
-{
-}
-@end
+int main(int argc, char *argv[]) {
+	NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
 
-@implementation myParseDelegate
-- (id)init
-{
-	if(self = [super init])
-	{
-	}
-	return self;
-}
-- (void)parser:(NSXMLParser *)parser 
-	didStartElement:(NSString *)elementName 
-	namespaceURI:(NSString *)namespaceURI 
-	qualifiedName:(NSString *)qualifiedName 
-	attributes:(NSDictionary *)attributeDict
-{
-	NSLog(@"%@\n", elementName);
-}
-@end
-
-@interface geturl : NSObject
-{
-}
-@end
-
-@implementation geturl
-- (id)init
-{
-	if(self = [super init])
-	{
-	}
-	return self;
-}
-- (NSString*)dorequest
-{
 	NSString *pd = @"<?xml version='1.0' encoding='utf-8'?><request method='invoice.list'></request>";
 	NSData *postdata = [NSData dataWithBytes:[pd UTF8String] length:[pd length]];
 
@@ -106,10 +72,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 		rstr
 		);
 
-	NSXMLParser *parser = [[NSXMLParser alloc] init];
-	[parser initWithData: reply];
-
-	[parser setDelegate: [[myParseDelegate alloc] init]];
+	NSXMLParser *parser = [[FBXMLParser alloc] initWithData: reply];
 
 	if ([parser parse])
 		NSLog(@"Parsed successfully\n");
@@ -125,17 +88,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 	// [rstr release];
 	// [parser release];
 
-	return @"Whee!";
-}
-@end
-
-
-int main(int argc, char *argv[]) {
-	NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
-
-//	NSUserDefaults *args = [NSUserDefaults standardUserDefaults];
-
-	NSLog([[[geturl alloc] init] dorequest]);
+	NSLog(@"WHEE");
 
 	[pool release];
 	return 0;
