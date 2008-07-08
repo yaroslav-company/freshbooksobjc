@@ -37,7 +37,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 int main(int argc, char *argv[]) {
 	NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
 
-	NSString *pd = @"<?xml version='1.0' encoding='utf-8'?><request method='invoice.list'></request>";
+	NSString *pd = @"<?xml version='1.0' encoding='utf-8'?><request method='client.list'></request>";
 	NSData *postdata = [NSData dataWithBytes:[pd UTF8String] length:[pd length]];
 
 	// create the request

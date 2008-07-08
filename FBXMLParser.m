@@ -30,14 +30,38 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 @implementation FBXMLParser
 
+
 - (id)initWithData:(NSData *)data
 {
 	if (self = [super init])
 	{
 		xp = [[NSXMLParser alloc] initWithData: data];
 		[xp setDelegate: self];
+		currentPhase = FBXMLParserPhase_NOWHERE;
 	}
 	return self;
+}
+
+- (void)parser:(NSXMLParser *)parser 
+	didEndElement:(NSString *)elementName 
+	namespaceURI:(NSString *)namespaceURI 
+	qualifiedName:(NSString *)qName
+{
+	NSLog(@"FBXMLParser leaving element: %@", elementName);
+
+	switch (currentPhase) {
+	case FBXMLParserPhase_CLIENT:
+		if (NSOrderedSame == [elementName compare:@"client"]) {
+			NSLog(@"End of client record");
+			currentPhase = FBXMLParserPhase_RESPONSE;
+		}
+		break;
+	case FBXMLParserPhase_RESPONSE:
+		if (NSOrderedSame == [elementName compare:@"response"]) {
+			NSLog(@"End of response");
+			currentPhase = FBXMLParserPhase_NOWHERE;
+		}
+	}
 }
 
 - (void)parser:(NSXMLParser *)parser 
@@ -47,6 +71,26 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 	attributes:(NSDictionary *)attributeDict
 {
 	NSLog(@"FBXMLParser found element: %@\n", elementName);
+
+	switch (currentPhase) {
+	case FBXMLParserPhase_NOWHERE:
+		if (NSOrderedSame == [elementName compare:@"response"]) {
+			if (NSOrderedSame != [[attributeDict valueForKey:@"status"] compare:@"ok"]) {
+				NSLog(@"Status Failed: '%@'", [attributeDict valueForKey:@"status"]);
+				currentPhase = FBXMLParserPhase_STATUS_FAIL;
+			} else {
+				NSLog(@"Status Succeeded", [attributeDict valueForKey:@"status"]);
+				currentPhase = FBXMLParserPhase_RESPONSE;
+			}
+		}
+		break;
+	case FBXMLParserPhase_RESPONSE:
+		if (NSOrderedSame == [elementName compare:@"client"]) {
+			NSLog(@"Found client record");
+			currentPhase = FBXMLParserPhase_CLIENT;
+		}
+		break;
+	}
 }
 
 - (BOOL)parse

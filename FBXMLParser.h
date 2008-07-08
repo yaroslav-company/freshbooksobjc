@@ -27,9 +27,24 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 #import <Foundation/Foundation.h>
 
+typedef enum FBXMLParser_Phase {
+	FBXMLParserPhase_NOWHERE,
+	FBXMLParserPhase_RESPONSE,
+	FBXMLParserPhase_CLIENT,
+	FBXMLParserPhase_CLIENT_ID,
+	FBXMLParserPhase_CLIENT_USERNAME,
+	FBXMLParserPhase_CLIENT_FIRST_NAME,
+	FBXMLParserPhase_CLIENT_LAST_NAME,
+	FBXMLParserPhase_CLIENT_ORGANIZATION,
+	FBXMLParserPhase_CLIENT_EMAIL,
+	FBXMLParserPhase_STATUS_FAIL,
+	FBXMLParserPhase_BAD
+} FBXMLParser_Phase;
+
 @interface FBXMLParser : NSObject
 {
 	NSXMLParser *xp;
+	FBXMLParser_Phase currentPhase;
 }
 - (id)initWithData:(NSData *)data;
 - (BOOL)parse;
