@@ -1,0 +1,1 @@
+Objective-C library to connect to your [FreshBooks](http://www.freshbooks.com) account.  Perfect for use on the iPhone or Mac OS X!
